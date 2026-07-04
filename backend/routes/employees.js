@@ -2,21 +2,18 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// GET /api/employees (HR Only - Gets list of all employees)
 router.get('/', async (req, res) => {
     try {
-        if (req.user.role !== 'hr') {
-            return res.error('FORBIDDEN', ['Only HR can view all employees'], 403);
-        }
+        if (req.user.role !== 'hr') return res.error('FORBIDDEN', ['Only HR can view all employees'], 403);
 
         const [employees] = await db.query(`
             SELECT 
-                u.id, u.employee_id, u.email, u.role,
+                u.id, u.name, u.employee_id, u.email, 
                 p.phone, p.job_title, p.department, p.base_salary
             FROM users u
             LEFT JOIN profiles p ON u.id = p.user_id
             WHERE u.role = 'employee'
-            ORDER BY u.employee_id ASC
+            ORDER BY u.name ASC
         `);
 
         return res.success(employees);

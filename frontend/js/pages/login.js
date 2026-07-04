@@ -10,9 +10,9 @@ export function render(container) {
             <div class="relative bg-v-charcoal border border-v-stone/20 rounded-2xl p-8">
                 
                 <div class="text-center mb-8">
-                    <h1 class="text-2xl font-bold text-v-ash tracking-tight">HR<span class="text-v-orange">MS</span></h1>
-                    <p class="text-xs text-v-stone-l mt-1">Human Resource Management System</p>
-                </div>
+    <img src="assets/logo.png" alt="HRFlow Logo" class="w-32 h-auto mx-auto mb-2 object-contain">
+    <p class="text-xs text-v-stone-l mt-1">Human Resource Management System</p>
+</div>
 
                 <div id="view-auth">
                     <div class="flex border-b border-v-stone/20 mb-6">

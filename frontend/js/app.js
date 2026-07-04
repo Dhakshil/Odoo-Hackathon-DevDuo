@@ -61,6 +61,7 @@ function buildSidebar(role) {
         { page: 'payroll', label: 'Payroll', img: 'https://z-cdn-media.chatglm.cn/files/6af06cf1-53fe-4306-a9b3-ded5d50efe71.png?auth_key=1883158378-6c9d39f1b0474aa6a1b499801ca2c9b6-0-68a779f7be7f979d3156a12342d34ea4', adminOnly: false },
     ];
 
+    // 
     nav.innerHTML = links.filter(l => !l.adminOnly || role === 'hr')
         .map(l => `
             <a href="#${l.page}" data-page="${l.page}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-v-stone-l hover:text-v-ash hover:bg-v-hover transition-colors border-l-2 border-transparent -ml-[2px]">
