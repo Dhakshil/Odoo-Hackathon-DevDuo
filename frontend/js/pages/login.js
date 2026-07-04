@@ -41,7 +41,7 @@ export function render(container) {
                             <label class="block text-xs font-medium uppercase tracking-wider text-v-stone-l mb-1.5">Role</label>
                             <select id="su-role" class="w-full px-3 py-2.5 bg-v-black/50 border border-v-stone/30 rounded-lg text-sm text-v-ash focus:outline-none focus:border-v-orange transition-colors">
                                 <option value="employee">Employee</option>
-                                <option value="admin">HR / Admin</option>
+                                <option value="hr">HR / Admin</option>
                             </select>
                         </div>
                     </div>
@@ -61,34 +61,71 @@ export function render(container) {
 
     const tabSignin = document.getElementById('tab-signin');
     const tabSignup = document.getElementById('tab-signup');
-
-    tabSignin.addEventListener('click', () => { formSignin.classList.remove('hidden'); formSignup.classList.add('hidden'); tabSignin.classList.add('text-v-orange', 'border-v-orange'); tabSignin.classList.remove('text-v-stone-l'); tabSignup.classList.remove('text-v-orange', 'border-v-orange'); tabSignup.classList.add('text-v-stone-l'); });
-    tabSignup.addEventListener('click', () => { formSignup.classList.remove('hidden'); formSignin.classList.add('hidden'); tabSignup.classList.add('text-v-orange', 'border-v-orange'); tabSignup.classList.remove('text-v-stone-l'); tabSignin.classList.remove('text-v-orange', 'border-v-orange'); tabSignin.classList.add('text-v-stone-l'); });
-
     const formSignin = document.getElementById('signin-form');
     const formSignup = document.getElementById('signup-form');
+
+    if (!tabSignin || !tabSignup || !formSignin || !formSignup) return;
+
+    tabSignin.addEventListener('click', () => {
+        formSignin.classList.remove('hidden');
+        formSignup.classList.add('hidden');
+        tabSignin.classList.add('text-v-orange', 'border-v-orange');
+        tabSignin.classList.remove('text-v-stone-l');
+        tabSignup.classList.remove('text-v-orange', 'border-v-orange');
+        tabSignup.classList.add('text-v-stone-l');
+    });
+
+    tabSignup.addEventListener('click', () => {
+        formSignup.classList.remove('hidden');
+        formSignin.classList.add('hidden');
+        tabSignup.classList.add('text-v-orange', 'border-v-orange');
+        tabSignup.classList.remove('text-v-stone-l');
+        tabSignin.classList.remove('text-v-orange', 'border-v-orange');
+        tabSignin.classList.add('text-v-stone-l');
+    });
 
     formSignin.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('si-btn');
-        btn.disabled = true; btn.textContent = 'Signing In...';
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Signing In...';
+        }
         try {
             const data = await api.post('/auth/signin', { email: document.getElementById('si-email').value, password: document.getElementById('si-password').value });
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('role', data.user.role || 'employee');
             showToast('Login successful!', 'ok');
             window.location.reload();
-        } catch (error) { showToast(error.details?.[0]?.message || 'Login failed', 'err'); btn.disabled = false; btn.textContent = 'Sign In'; }
+        } catch (error) {
+            showToast(error?.details?.[0]?.message || 'Login failed', 'err');
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Sign In';
+            }
+        }
     });
 
     formSignup.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('su-btn');
-        btn.disabled = true; btn.textContent = 'Creating...';
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+        }
         try {
             await api.post('/auth/signup', { name: document.getElementById('su-name').value, employee_id: document.getElementById('su-empid').value, email: document.getElementById('su-email').value, password: document.getElementById('su-password').value, role: document.getElementById('su-role').value });
-            showToast('Account created!', 'ok'); tabSignin.click(); document.getElementById('si-email').value = document.getElementById('su-email').value;
-        } catch (error) { showToast(error.details?.[0]?.message || 'Signup failed', 'err'); }
-        finally { btn.disabled = false; btn.textContent = 'Create Account'; }
+            showToast('Account created!', 'ok');
+            tabSignin.click();
+            document.getElementById('si-email').value = document.getElementById('su-email').value;
+        } catch (error) {
+            showToast(error?.details?.[0]?.message || 'Signup failed', 'err');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Create Account';
+            }
+        }
     });
 }

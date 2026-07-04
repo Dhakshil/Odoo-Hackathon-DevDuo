@@ -6,7 +6,7 @@ export async function render(container) {
     const role = localStorage.getItem('role');
 
     try {
-        if (role === 'admin') {
+        if (role === 'hr') {
             await renderAdminPayroll(container);
         } else {
             await renderEmployeePayroll(container);

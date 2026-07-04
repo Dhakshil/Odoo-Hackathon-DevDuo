@@ -5,7 +5,7 @@ export async function render(container) {
     showSpinner(container);
     const role = localStorage.getItem('role');
 
-    if (role === 'admin') {
+    if (role === 'hr') {
         await renderAdminView(container);
     } else {
         await renderEmployeeView(container);

@@ -50,7 +50,7 @@ export async function render(container) {
                         </div>
                     </div>
 
-                    ${role === 'admin' ? `
+                    ${role === 'hr' ? `
                     <!-- Admin Only: Edit Button -->
                     <div class="px-6 pb-6">
                         <button id="edit-profile-btn" class="px-5 py-2 bg-v-orange hover:bg-v-orange-h text-v-black font-semibold text-sm rounded-lg transition-colors">
@@ -63,7 +63,7 @@ export async function render(container) {
         `;
 
         // Edit button mock action
-        if (role === 'admin') {
+        if (role === 'hr') {
             document.getElementById('edit-profile-btn').addEventListener('click', async () => {
                 const btn = document.getElementById('edit-profile-btn');
                 btn.disabled = true; btn.textContent = 'Saving...';

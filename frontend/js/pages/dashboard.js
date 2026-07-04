@@ -8,7 +8,7 @@ export async function render(container) {
     try {
         const stats = await api.get('/dashboard/stats');
         
-        if (role === 'admin') {
+        if (role === 'hr') {
             renderAdminDashboard(container, stats);
         } else {
             renderEmployeeDashboard(container, stats);

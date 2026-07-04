@@ -35,12 +35,13 @@ function initApp() {
     document.getElementById('app-container').classList.remove('hidden');
     
     const user = JSON.parse(localStorage.getItem('user'));
-    const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+    const displayName = user.name || user.email || 'User';
+    const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase();
     
     document.getElementById('user-info').innerHTML = `
         <div class="w-8 h-8 rounded-full bg-v-orange/20 flex items-center justify-center text-xs font-bold text-v-orange">${initials}</div>
         <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-v-ash truncate">${user.name}</p>
+            <p class="text-sm font-medium text-v-ash truncate">${displayName}</p>
             <p class="text-[10px] text-v-stone-l uppercase">${user.role}</p>
         </div>
     `;
@@ -60,7 +61,7 @@ function buildSidebar(role) {
         { page: 'payroll', label: 'Payroll', icon: '💰' },
     ];
 
-    nav.innerHTML = links.filter(l => !l.adminOnly || role === 'admin')
+    nav.innerHTML = links.filter(l => !l.adminOnly || role === 'hr')
         .map(l => `
             <a href="#${l.page}" data-page="${l.page}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-v-stone-l hover:text-v-ash hover:bg-v-hover transition-colors">
                 <span class="text-base">${l.icon}</span> ${l.label}
