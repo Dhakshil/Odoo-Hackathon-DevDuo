@@ -4,6 +4,9 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+// Bulletproof fallback so it never crashes
+const JWT_SECRET = process.env.JWT_SECRET || 'odoo_hackathon_super_secret';
+
 // Sign Up
 router.post('/signup', async (req, res, next) => {
     try {
@@ -15,16 +18,14 @@ router.post('/signup', async (req, res, next) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         
-        // Create User
         const [result] = await db.query(
             'INSERT INTO users (employee_id, email, password, role) VALUES (?, ?, ?, ?)',
             [employee_id, email, hashedPassword, role || 'employee']
         );
         
-        // Create Empty Profile
         await db.query('INSERT INTO profiles (user_id) VALUES (?)', [result.insertId]);
 
-        const token = jwt.sign({ id: result.insertId, role: role || 'employee' }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const token = jwt.sign({ id: result.insertId, role: role || 'employee' }, JWT_SECRET, { expiresIn: '1d' });
         return res.success({ token, user: { id: result.insertId, employee_id, email, role: role || 'employee' } });
     } catch (err) {
         if (err.code === 'ER_DUP_ENTRY') return res.error('DUPLICATE_ENTRY', ['Email or Employee ID already exists']);
@@ -44,7 +45,7 @@ router.post('/signin', async (req, res, next) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.error('INVALID_CREDENTIALS', ['Incorrect password']);
 
-        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
         
         return res.success({ 
             token, 
