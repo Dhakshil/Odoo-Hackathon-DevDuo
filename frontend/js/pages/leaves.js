@@ -12,18 +12,13 @@ export async function render(container) {
     }
 }
 
-// ==========================================
-// EMPLOYEE VIEW: Apply Form + My Leaves
-// ==========================================
 async function renderEmployeeView(container) {
     try {
-        const data = await api.get('/leaves/my');
-        const leaves = data.leaves || [];
+        // FIXED: Changed /leaves/my to /leaves
+        const leaves = await api.get('/leaves');
 
         container.innerHTML = `
             <div class="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <!-- Apply Form -->
                 <div class="lg:col-span-1 bg-v-charcoal border border-v-stone/20 rounded-xl p-5 h-fit">
                     <h3 class="text-sm font-semibold text-v-ash mb-4 border-b border-v-stone/20 pb-3">Apply for Leave</h3>
                     <form id="leave-form" class="space-y-4">
@@ -51,7 +46,6 @@ async function renderEmployeeView(container) {
                     </form>
                 </div>
 
-                <!-- My Leaves Table -->
                 <div class="lg:col-span-2 bg-v-charcoal border border-v-stone/20 rounded-xl overflow-hidden">
                     <div class="p-4 border-b border-v-stone/20">
                         <h3 class="text-sm font-semibold text-v-ash">My History</h3>
@@ -66,7 +60,7 @@ async function renderEmployeeView(container) {
                             </tr>
                         </thead>
                         <tbody id="my-leaves-tbody">
-                            ${renderLeaveRows(leaves, false)}
+                            ${renderLeaveRows(leaves)}
                         </tbody>
                     </table>
                     ${leaves.length === 0 ? '<p class="text-center text-v-stone-l text-sm py-10">No leave history found.</p>' : ''}
@@ -74,7 +68,6 @@ async function renderEmployeeView(container) {
             </div>
         `;
 
-        // Handle Form Submit
         document.getElementById('leave-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
@@ -86,11 +79,13 @@ async function renderEmployeeView(container) {
                     endDate: document.getElementById('l-end').value,
                     remarks: document.getElementById('l-remarks').value
                 });
-                document.getElementById('my-leaves-tbody').insertAdjacentHTML('afterbegin', renderLeaveRows([newLeave], false));
+                document.getElementById('my-leaves-tbody').insertAdjacentHTML('afterbegin', renderLeaveRows([newLeave]));
                 e.target.reset();
                 showToast('Leave applied successfully!', 'ok');
             } catch (err) {
-                showToast(err.details?.[0]?.message || 'Failed to apply', 'err');
+                // FIXED: Proper error message extraction
+                const msg = Array.isArray(err.details) ? err.details[0] : 'Failed to apply';
+                showToast(msg, 'err');
             } finally {
                 btn.disabled = false; btn.textContent = 'Submit Request';
             }
@@ -101,13 +96,10 @@ async function renderEmployeeView(container) {
     }
 }
 
-// ==========================================
-// ADMIN VIEW: Approval Table
-// ==========================================
 async function renderAdminView(container) {
     try {
-        const data = await api.get('/leaves/all');
-        const leaves = data.leaves || [];
+        // FIXED: Changed /leaves/all to /leaves
+        const leaves = await api.get('/leaves');
 
         container.innerHTML = `
             <div class="bg-v-charcoal border border-v-stone/20 rounded-xl overflow-hidden">
@@ -140,7 +132,7 @@ function renderAdminRow(l) {
     const isPending = l.status === 'pending';
     return `
         <tr class="border-b border-v-stone/10 hover:bg-v-hover transition-colors">
-            <td class="px-4 py-3 font-medium text-v-ash">${l.user.name}</td>
+            <td class="px-4 py-3 font-medium text-v-ash">${l.user?.name || 'Unknown'}</td>
             <td class="px-4 py-3 text-v-stone-l">${l.type}</td>
             <td class="px-4 py-3 text-v-stone-l">${l.startDate} ${l.endDate !== l.startDate ? '→ ' + l.endDate : ''}</td>
             <td class="px-4 py-3 text-v-stone-l hidden md:table-cell">${l.remarks}</td>
@@ -157,7 +149,7 @@ function renderAdminRow(l) {
     `;
 }
 
-// Global function for button clicks
+// FIXED: Changed URL from /leaves/${id}/status to /leaves/${id}
 window.handleAdminAction = async (id, status, btn) => {
     const row = btn.closest('tr');
     const comment = row.querySelector('.comment-input')?.value || '';
@@ -165,19 +157,16 @@ window.handleAdminAction = async (id, status, btn) => {
     btn.textContent = '...';
     
     try {
-        await api.patch(`/leaves/${id}/status`, { status, comment });
+        await api.patch(`/leaves/${id}`, { status, comment });
         showToast(`Leave ${status}!`, status === 'approved' ? 'ok' : 'warn');
-        // Refresh the page data smoothly
         render(document.getElementById('app'));
     } catch (err) {
-        showToast('Action failed', 'err');
+        const msg = Array.isArray(err.details) ? err.details[0] : 'Action failed';
+        showToast(msg, 'err');
         btn.disabled = false;
     }
 };
 
-// ==========================================
-// HELPER: Render Employee Table Rows
-// ==========================================
 function renderLeaveRows(leaves) {
     return leaves.map(l => {
         let statusClass = 'bg-warn/15 text-warn';

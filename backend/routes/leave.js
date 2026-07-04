@@ -5,25 +5,29 @@ const db = require('../db');
 // Apply for Leave
 router.post('/', async (req, res) => {
     try {
-        const { leave_type, start_date, end_date, remarks } = req.body;
+        // Frontend sends camelCase, we map it to snake_case for DB
+        const { type, startDate, endDate, remarks } = req.body;
         
-        if (!leave_type || !start_date || !end_date) {
+        if (!type || !startDate || !endDate) {
             return res.error('VALIDATION_ERROR', ['Missing required fields']);
         }
 
         const [result] = await db.query(
             `INSERT INTO leaves (user_id, leave_type, start_date, end_date, remarks) 
              VALUES (?, ?, ?, ?, ?)`,
-            [req.user.id, leave_type, start_date, end_date, remarks]
+            [req.user.id, type, startDate, endDate, remarks]
         );
 
         const [leave] = await db.query('SELECT * FROM leaves WHERE id = ?', [result.insertId]);
         
+        // Return in the exact format the frontend expects
         return res.success({
-            ...leave[0],
-            start_date: leave[0].start_date.toISOString(),
-            end_date: leave[0].end_date.toISOString(),
-            created_at: leave[0].created_at.toISOString()
+            id: leave[0].id,
+            type: leave[0].leave_type,
+            startDate: leave[0].start_date ? new Date(leave[0].start_date).toISOString().split('T')[0] : null,
+            endDate: leave[0].end_date ? new Date(leave[0].end_date).toISOString().split('T')[0] : null,
+            status: leave[0].status,
+            remarks: leave[0].remarks
         }, 'Leave request submitted');
     } catch (err) {
         return res.error('SERVER_ERROR', [err.message], 500);
@@ -33,7 +37,10 @@ router.post('/', async (req, res) => {
 // Get Leaves (Own for Employee, All for HR)
 router.get('/', async (req, res) => {
     try {
-        let query = 'SELECT l.*, u.employee_id, u.email FROM leaves l JOIN users u ON l.user_id = u.id';
+        let query = `
+            SELECT l.*, u.name, u.employee_id, u.email 
+            FROM leaves l JOIN users u ON l.user_id = u.id
+        `;
         let params = [];
         
         if (req.user.role === 'employee') {
@@ -43,11 +50,15 @@ router.get('/', async (req, res) => {
 
         const [rows] = await db.query(query, params);
         
+        // Map to frontend expected keys
         const formatted = rows.map(r => ({
-            ...r,
-            start_date: r.start_date ? new Date(r.start_date).toISOString() : null,
-            end_date: r.end_date ? new Date(r.end_date).toISOString() : null,
-            created_at: r.created_at ? new Date(r.created_at).toISOString() : null
+            id: r.id,
+            type: r.leave_type,
+            startDate: r.start_date ? new Date(r.start_date).toISOString().split('T')[0] : null,
+            endDate: r.end_date ? new Date(r.end_date).toISOString().split('T')[0] : null,
+            status: r.status,
+            remarks: r.remarks,
+            user: { name: r.name, employee_id: r.employee_id }
         }));
 
         return res.success(formatted);

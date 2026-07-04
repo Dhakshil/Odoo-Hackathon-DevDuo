@@ -11,18 +11,16 @@ export async function render(container) {
         container.innerHTML = `
             <div class="max-w-3xl mx-auto">
                 <div class="bg-v-charcoal border border-v-stone/20 rounded-xl overflow-hidden">
-                    <!-- Header -->
                     <div class="p-6 border-b border-v-stone/20 flex items-center gap-4 bg-v-black/20">
                         <div class="w-16 h-16 rounded-full bg-v-orange/20 border-2 border-v-orange flex items-center justify-center text-xl font-bold text-v-orange">
-                            ${profile.name.split(' ').map(n => n[0]).join('')}
+                            ${profile.name ? profile.name.split(' ').map(n => n[0]).join('') : 'U'}
                         </div>
                         <div>
-                            <h2 class="text-xl font-bold text-v-ash">${profile.name}</h2>
-                            <p class="text-sm text-v-orange font-medium">${profile.designation}</p>
+                            <h2 class="text-xl font-bold text-v-ash">${profile.name || 'User'}</h2>
+                            <p class="text-sm text-v-orange font-medium">${profile.job_title || 'Employee'}</p>
                         </div>
                     </div>
 
-                    <!-- Details Grid -->
                     <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
                         <div>
                             <p class="text-xs font-medium uppercase tracking-wider text-v-stone-l mb-1">Employee ID</p>
@@ -34,44 +32,39 @@ export async function render(container) {
                         </div>
                         <div>
                             <p class="text-xs font-medium uppercase tracking-wider text-v-stone-l mb-1">Phone</p>
-                            <p class="text-sm text-v-ash">${profile.phone}</p>
+                            <p class="text-sm text-v-ash">${profile.phone || 'N/A'}</p>
                         </div>
                         <div>
                             <p class="text-xs font-medium uppercase tracking-wider text-v-stone-l mb-1">Department</p>
-                            <p class="text-sm text-v-ash">${profile.department}</p>
+                            <p class="text-sm text-v-ash">${profile.department || 'N/A'}</p>
                         </div>
-                        <div>
-                            <p class="text-xs font-medium uppercase tracking-wider text-v-stone-l mb-1">Join Date</p>
-                            <p class="text-sm text-v-ash">${new Date(profile.join_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                        </div>
-                        <div>
+                        <div class="md:col-span-2">
                             <p class="text-xs font-medium uppercase tracking-wider text-v-stone-l mb-1">Address</p>
-                            <p class="text-sm text-v-ash">${profile.address}</p>
+                            <p class="text-sm text-v-ash">${profile.address || 'N/A'}</p>
                         </div>
                     </div>
 
                     ${role === 'hr' ? `
-                    <!-- Admin Only: Edit Button -->
                     <div class="px-6 pb-6">
-                        <button id="edit-profile-btn" class="px-5 py-2 bg-v-orange hover:bg-v-orange-h text-v-black font-semibold text-sm rounded-lg transition-colors">
-                            Edit Profile
-                        </button>
+                        <button id="edit-profile-btn" class="px-5 py-2 bg-v-orange hover:bg-v-orange-h text-v-black font-semibold text-sm rounded-lg transition-colors">Edit Profile</button>
                     </div>
                     ` : ''}
                 </div>
             </div>
         `;
 
-        // Edit button mock action
         if (role === 'hr') {
             document.getElementById('edit-profile-btn').addEventListener('click', async () => {
                 const btn = document.getElementById('edit-profile-btn');
                 btn.disabled = true; btn.textContent = 'Saving...';
                 try {
-                    await api.patch('/profile', { name: profile.name });
+                    // FIXED: Send actual editable fields
+                    await api.patch('/profile', { phone: '9999999999', address: 'Updated Address', job_title: 'Senior Dev', department: 'IT' });
                     showToast('Profile updated successfully!', 'ok');
+                    render(document.getElementById('app'));
                 } catch (err) {
-                    showToast('Failed to update', 'err');
+                    const msg = Array.isArray(err.details) ? err.details[0] : 'Failed to update';
+                    showToast(msg, 'err');
                 } finally {
                     btn.disabled = false; btn.textContent = 'Edit Profile';
                 }

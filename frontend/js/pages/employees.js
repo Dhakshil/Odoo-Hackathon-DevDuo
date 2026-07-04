@@ -30,7 +30,7 @@ export async function render(container) {
                                     <td class="px-4 py-3">
                                         <div class="flex items-center gap-3">
                                             <div class="w-8 h-8 rounded-full bg-v-orange/10 flex items-center justify-center text-xs font-bold text-v-orange">
-                                                ${emp.name ? emp.name.split(' ').map(n=>n[0]).join('') : 'N/A'}
+                                                ${emp.name ? emp.name.split(' ').map(n=>n[0]).join('') : 'U'}
                                             </div>
                                             <div>
                                                 <p class="font-medium text-v-ash">${emp.name || 'Unknown'}</p>
@@ -42,9 +42,7 @@ export async function render(container) {
                                     <td class="px-4 py-3 text-v-stone-l hidden lg:table-cell">${emp.department || 'N/A'}</td>
                                     <td class="px-4 py-3 text-right text-v-ash font-mono">₹${emp.base_salary ? emp.base_salary.toLocaleString('en-IN') : '0'}</td>
                                     <td class="px-4 py-3 text-right">
-                                        <button onclick="loadEmployeeDetails(${emp.id})" class="px-3 py-1.5 text-xs font-medium rounded-md bg-v-orange/10 text-v-orange border border-v-orange/30 hover:bg-v-orange/20 transition-colors">
-                                            View
-                                        </button>
+                                        <button onclick="loadEmployeeDetails(${emp.id})" class="px-3 py-1.5 text-xs font-medium rounded-md bg-v-orange/10 text-v-orange border border-v-orange/30 hover:bg-v-orange/20 transition-colors">View</button>
                                     </td>
                                 </tr>
                             `).join('')}
@@ -54,21 +52,13 @@ export async function render(container) {
                 ${employees.length === 0 ? '<p class="text-center text-v-stone-l text-sm py-10">No employees found.</p>' : ''}
             </div>
 
-            <!-- Detail Modal -->
             <div id="emp-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-                <!-- Backdrop -->
                 <div class="absolute inset-0 bg-black/70" onclick="closeEmpModal()"></div>
-                
-                <!-- Modal Content -->
                 <div class="relative bg-v-charcoal border border-v-stone/30 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50 transform scale-95 opacity-0 transition-all duration-300" id="emp-modal-content">
-                    
-                    <!-- Modal Header -->
                     <div class="sticky top-0 bg-v-charcoal border-b border-v-stone/20 p-5 flex justify-between items-center z-10">
                         <h3 class="text-lg font-bold text-v-ash" id="modal-emp-name">Employee Details</h3>
                         <button onclick="closeEmpModal()" class="text-v-stone-l hover:text-v-ash text-2xl leading-none">&times;</button>
                     </div>
-
-                    <!-- Modal Body -->
                     <div class="p-6 space-y-6" id="modal-body">
                         <div class="flex justify-center py-10 text-v-stone-l text-sm">Loading data...</div>
                     </div>
@@ -76,18 +66,17 @@ export async function render(container) {
             </div>
         `;
     } catch (err) {
-        showToast('Failed to load employees', 'err');
+        const msg = Array.isArray(err.details) ? err.details[0] : 'Failed to load employees';
+        showToast(msg, 'err');
     }
 }
 
-// Global function to fetch and show details
 window.loadEmployeeDetails = async (userId) => {
     const modal = document.getElementById('emp-modal');
     const modalContent = document.getElementById('emp-modal-content');
     const modalBody = document.getElementById('modal-body');
     const modalName = document.getElementById('modal-emp-name');
 
-    // Open modal with animation
     modal.classList.remove('hidden');
     requestAnimationFrame(() => {
         modalContent.classList.remove('scale-95', 'opacity-0');
@@ -97,7 +86,6 @@ window.loadEmployeeDetails = async (userId) => {
     modalBody.innerHTML = '<div class="flex justify-center py-10"><div class="w-8 h-8 border-2 border-v-orange border-t-transparent rounded-full animate-spin"></div></div>';
 
     try {
-        // Fetch both Profile and Payroll simultaneously
         const [profile, payroll] = await Promise.all([
             api.get(`/profile/${userId}`),
             api.get(`/payroll/${userId}`)
@@ -106,7 +94,6 @@ window.loadEmployeeDetails = async (userId) => {
         modalName.textContent = profile.name || 'Employee Details';
 
         modalBody.innerHTML = `
-            <!-- Profile Section -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="bg-v-black/30 rounded-lg p-4 border border-v-stone/10">
                     <p class="text-xs text-v-stone-l uppercase mb-1">Employee ID</p>
@@ -118,7 +105,7 @@ window.loadEmployeeDetails = async (userId) => {
                 </div>
                 <div class="bg-v-black/30 rounded-lg p-4 border border-v-stone/10">
                     <p class="text-xs text-v-stone-l uppercase mb-1">Job Title</p>
-                    <p class="text-sm text-v-ash">${profile.job_title || profile.designation || 'N/A'}</p>
+                    <p class="text-sm text-v-ash">${profile.job_title || 'N/A'}</p>
                 </div>
                 <div class="bg-v-black/30 rounded-lg p-4 border border-v-stone/10">
                     <p class="text-xs text-v-stone-l uppercase mb-1">Department</p>
@@ -126,28 +113,14 @@ window.loadEmployeeDetails = async (userId) => {
                 </div>
             </div>
 
-            <!-- Payroll Section -->
             <div>
                 <h4 class="text-sm font-semibold text-v-ash mb-3 border-b border-v-stone/20 pb-2">Salary Structure</h4>
                 <div class="bg-v-black/30 rounded-lg p-4 border border-v-stone/10 flex items-center justify-between">
                     <div>
-                        <p class="text-xs text-v-stone-l uppercase">Net Pay (${payroll.month || 'Current Month'})</p>
-                        <p class="text-2xl font-bold text-v-orange mt-1">₹${payroll.net_pay ? payroll.net_pay.toLocaleString('en-IN') : '0'}</p>
+                        <p class="text-xs text-v-stone-l uppercase">Base Salary</p>
+                        <p class="text-2xl font-bold text-v-orange mt-1">₹${payroll.base_salary ? payroll.base_salary.toLocaleString('en-IN') : '0'}</p>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-v-orange/10 flex items-center justify-center text-xl">💰</div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4 mt-4">
-                    <div>
-                        <p class="text-xs text-ok font-medium mb-2">Earnings</p>
-                        <p class="text-sm text-v-stone-l">Basic: <span class="text-v-ash">₹${payroll.basic?.toLocaleString('en-IN') || 0}</span></p>
-                        <p class="text-sm text-v-stone-l">HRA: <span class="text-v-ash">₹${payroll.hra?.toLocaleString('en-IN') || 0}</span></p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-err font-medium mb-2">Deductions</p>
-                        <p class="text-sm text-v-stone-l">PF: <span class="text-v-ash">-₹${payroll.deductions?.pf?.toLocaleString('en-IN') || 0}</span></p>
-                        <p class="text-sm text-v-stone-l">Tax: <span class="text-v-ash">-₹${payroll.deductions?.tax?.toLocaleString('en-IN') || 0}</span></p>
-                    </div>
                 </div>
             </div>
         `;
@@ -157,7 +130,6 @@ window.loadEmployeeDetails = async (userId) => {
     }
 };
 
-// Global function to close modal
 window.closeEmpModal = () => {
     const modal = document.getElementById('emp-modal');
     const modalContent = document.getElementById('emp-modal-content');
@@ -167,5 +139,5 @@ window.closeEmpModal = () => {
     
     setTimeout(() => {
         modal.classList.add('hidden');
-    }, 300); // Wait for animation to finish
+    }, 300);
 };

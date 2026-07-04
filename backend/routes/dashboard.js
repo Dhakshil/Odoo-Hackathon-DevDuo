@@ -14,10 +14,11 @@ router.get('/stats', async (req, res) => {
             const [pendingLeaves] = await db.query("SELECT COUNT(*) as count FROM leaves WHERE status = 'pending'");
             const [presentToday] = await db.query("SELECT COUNT(*) as count FROM attendance WHERE date = CURDATE() AND status = 'present'");
             
-            // Get recent 5 leave requests for HR feed
+            // Get recent 5 PENDING leave requests for HR feed
             const [rawLeaves] = await db.query(`
                 SELECT l.id, l.status, l.leave_type, l.start_date, u.employee_id, u.email 
                 FROM leaves l JOIN users u ON l.user_id = u.id 
+                WHERE l.status = 'pending'
                 ORDER BY l.created_at DESC LIMIT 5
             `);
 

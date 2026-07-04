@@ -8,27 +8,30 @@ export async function render(container) {
     let checkInTime = null;
 
     try {
-        const data = await api.get('/attendance/my');
-        const records = data.records || [];
+        // FIXED: Changed /attendance/my to /attendance
+        const records = await api.get('/attendance');
+
+        // Check if already checked in today
+        const todayStr = new Date().toLocaleDateString('en-CA');
+        const todayRecord = records.find(r => r.date === todayStr);
+        
+        if (todayRecord && todayRecord.check_in && !todayRecord.check_out) {
+            isCheckedIn = true;
+            checkInTime = todayRecord.check_in;
+        }
 
         container.innerHTML = `
             <div class="max-w-3xl mx-auto">
-                
-                <!-- Check In/Out Section -->
                 <div class="bg-v-charcoal border border-v-stone/20 rounded-xl p-8 mb-6 text-center">
                     <p class="text-xs font-medium uppercase tracking-wider text-v-stone-l mb-6">Today's Attendance</p>
-                    
                     <div class="flex flex-col items-center justify-center">
                         <button id="check-btn" class="w-44 h-44 rounded-full bg-v-orange text-v-black font-bold text-xl shadow-lg shadow-v-orange/30 hover:shadow-v-orange/50 hover:scale-105 transition-all duration-300 flex flex-col items-center justify-center border-4 border-v-orange/50">
                             <span id="btn-text" class="mt-[-8px]">CHECK-IN</span>
                             <span id="btn-sub" class="text-xs font-normal mt-2 opacity-80">Click to start day</span>
                         </button>
-                        
                         <p id="status-text" class="mt-6 text-sm text-v-stone-l">You are not checked in yet.</p>
                     </div>
                 </div>
-
-                <!-- History Table -->
                 <div class="bg-v-charcoal border border-v-stone/20 rounded-xl overflow-hidden">
                     <div class="p-4 border-b border-v-stone/20">
                         <h3 class="text-sm font-semibold text-v-ash">Recent History</h3>
@@ -61,25 +64,30 @@ export async function render(container) {
             </div>
         `;
 
-        // --- Button Logic ---
         const checkBtn = document.getElementById('check-btn');
         const btnText = document.getElementById('btn-text');
         const btnSub = document.getElementById('btn-sub');
         const statusText = document.getElementById('status-text');
 
+        // If already checked in, update UI on load
+        if (isCheckedIn) {
+            checkBtn.classList.remove('bg-v-orange', 'border-v-orange/50', 'shadow-v-orange/30', 'hover:shadow-v-orange/50');
+            checkBtn.classList.add('bg-err', 'border-err/50', 'shadow-err/30', 'hover:shadow-err/50');
+            btnText.textContent = 'CHECK-OUT';
+            btnSub.textContent = `Since ${checkInTime}`;
+            statusText.innerHTML = `<span class="text-ok font-medium">Checked in at ${checkInTime}</span>`;
+        }
+
         checkBtn.addEventListener('click', async () => {
-            // Disable button to prevent double clicks
             checkBtn.disabled = true;
             checkBtn.classList.add('opacity-70');
 
             try {
                 if (!isCheckedIn) {
-                    // CHECK IN
                     const res = await api.post('/attendance/check-in');
                     isCheckedIn = true;
                     checkInTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                     
-                    // Update UI
                     checkBtn.classList.remove('bg-v-orange', 'border-v-orange/50', 'shadow-v-orange/30', 'hover:shadow-v-orange/50');
                     checkBtn.classList.add('bg-err', 'border-err/50', 'shadow-err/30', 'hover:shadow-err/50');
                     btnText.textContent = 'CHECK-OUT';
@@ -88,22 +96,21 @@ export async function render(container) {
                     
                     showToast('Successfully checked in!', 'ok');
                 } else {
-                    // CHECK OUT
                     await api.post('/attendance/check-out');
                     isCheckedIn = false;
                     
-                    // Update UI
                     checkBtn.classList.remove('bg-err', 'border-err/50', 'shadow-err/30', 'hover:shadow-err/50');
                     checkBtn.classList.add('bg-v-stone', 'border-v-stone/50', 'shadow-none', 'cursor-not-allowed');
                     btnText.textContent = 'FINISHED';
                     btnSub.textContent = 'Have a good day!';
                     statusText.innerHTML = `<span class="text-v-stone-l">Day completed.</span>`;
-                    checkBtn.disabled = true; // Lock it for the day
+                    checkBtn.disabled = true;
                     
                     showToast('Successfully checked out!', 'ok');
                 }
             } catch (err) {
-                showToast(err.details?.[0]?.message || 'Action failed', 'err');
+                const msg = Array.isArray(err.details) ? err.details[0] : 'Action failed';
+                showToast(msg, 'err');
                 checkBtn.disabled = false;
                 checkBtn.classList.remove('opacity-70');
             }
