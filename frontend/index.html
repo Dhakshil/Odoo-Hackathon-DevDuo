@@ -1,16 +1,70 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Odoo Hackathon</title>
-    <!-- Tailwind CDN (No build step required) -->
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRMS - Odoo Hackathon</title>
     <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-gray-100">
-    <h1 class="text-3xl font-bold text-center mt-10">Frontend is Working!</h1>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        v: {
+                            black: '#0B0B0B', charcoal: '#1A1A1D', hover: '#252528',
+                            orange: '#FF4D00', 'orange-h': '#E04400', ember: '#8B1E00',
+                            stone: '#4A4746', 'stone-l': '#9A9594', ash: '#F2F1EE',
+                        },
+                        ok: '#2DD47B', warn: '#FFB020', err: '#FF2D2D',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="h-full bg-v-black text-v-ash font-sans antialiased">
+    
+    <!-- AUTH SCREEN -->
+    <div id="auth-container" class="hidden min-h-screen flex items-center justify-center p-4"></div>
 
-    <!-- Your JS will go here -->
-    <script src="js/app.js"></script>
-  </body>
+    <!-- APP SCREEN -->
+    <div id="app-container" class="hidden h-full flex">
+        
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-60 bg-v-charcoal border-r border-v-stone/20 flex flex-col h-screen sticky top-0 z-20 transition-transform lg:translate-x-0 -translate-x-full">
+            <div class="p-5 border-b border-v-stone/20">
+                <h1 class="text-lg font-bold text-v-ash tracking-tight">HR<span class="text-v-orange">MS</span></h1>
+                <p class="text-[10px] text-v-stone-l uppercase tracking-widest mt-0.5">Volcanic Intensity</p>
+            </div>
+            <nav id="sidebar-nav" class="flex-1 p-3 space-y-1 overflow-y-auto"></nav>
+            <div class="p-4 border-t border-v-stone/20">
+                <div id="user-info" class="flex items-center gap-3"></div>
+            </div>
+        </aside>
+
+        <!-- Main Area -->
+        <div class="flex-1 flex flex-col h-screen overflow-hidden">
+            <header class="h-14 bg-v-charcoal border-b border-v-stone/20 flex items-center justify-between px-6 sticky top-0 z-10">
+                <div class="flex items-center gap-4">
+                    <button id="menu-toggle" class="lg:hidden text-v-stone-l hover:text-v-ash text-2xl">☰</button>
+                    <h2 id="page-title" class="text-sm font-semibold text-v-ash">Dashboard</h2>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div id="live-clock" class="text-xs font-mono text-v-orange bg-v-orange/10 px-2 py-1 rounded"></div>
+                    <button id="logout-btn" class="text-xs text-v-stone-l hover:text-err transition-colors font-medium">LOGOUT</button>
+                </div>
+            </header>
+            <main id="app" class="flex-1 overflow-y-auto p-6 bg-v-black"></main>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
+    
+    <!-- Mobile Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-10 hidden lg:hidden"></div>
+
+    <script type="module" src="./js/app.js"></script>
+</body>
 </html>

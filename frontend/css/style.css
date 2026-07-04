@@ -1,0 +1,15 @@
+/* Volcanic Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0B0B0B; }
+::-webkit-scrollbar-thumb { background: #4A4746; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #FF4D00; }
+
+/* Page transition */
+#app { transition: opacity 0.2s ease-in-out; }
+
+/* Active sidebar link */
+.nav-active {
+    background-color: rgba(255, 77, 0, 0.1) !important;
+    color: #FF4D00 !important;
+    border-left: 2px solid #FF4D00;
+}
