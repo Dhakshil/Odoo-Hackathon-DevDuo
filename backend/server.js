@@ -48,6 +48,7 @@ const leaveRoutes = require('./routes/leave');
 const profileRoutes = require('./routes/profile');
 const payrollRoutes = require('./routes/payroll');
 const dashboardRoutes = require('./routes/dashboard');
+const employeeRoutes = require('./routes/employees');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/attendance', authMiddleware, attendanceRoutes);
@@ -55,6 +56,7 @@ app.use('/api/leaves', authMiddleware, leaveRoutes);
 app.use('/api/profile', authMiddleware, profileRoutes);
 app.use('/api/payroll', authMiddleware, payrollRoutes);
 app.use('/api/dashboard', authMiddleware, dashboardRoutes);
+app.use('/api/employees', authMiddleware, employeeRoutes);
 
 app.get('/api/health', (req, res) => res.success({ status: 'running' }));
 
