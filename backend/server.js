@@ -5,6 +5,8 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
+const JWT_SECRET = process.env.JWT_SECRET || 'odoo_hackathon_super_secret';
+
 const app = express();
 const server = http.createServer(app);
 
@@ -34,7 +36,8 @@ const authMiddleware = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.error('UNAUTHORIZED', ['No token provided'], 401);
     try {
-        req.user = jwt.verify(token, process.env.JWT_SECRET);
+        // Change process.env.JWT_SECRET to just JWT_SECRET here:
+        req.user = jwt.verify(token, JWT_SECRET); 
         next();
     } catch (err) {
         return res.error('INVALID_TOKEN', ['Invalid or expired token'], 401);

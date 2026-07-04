@@ -1,6 +1,6 @@
 import { API_URL } from './config.js';
 
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 function getHeaders(hasBody = false) {
     const headers = {};
