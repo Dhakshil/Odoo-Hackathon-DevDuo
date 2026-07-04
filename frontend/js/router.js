@@ -1,4 +1,4 @@
-import { showSpinner } from './ui.js';
+import { showSpinner, showToast } from './ui.js';
 
 const routes = {
     'dashboard': './pages/dashboard.js',
@@ -19,7 +19,9 @@ async function handleRoute() {
     const app = document.getElementById('app');
     const role = localStorage.getItem('role');
     
+    // Guard for admin routes - NOW WITH TOAST!
     if (hash === 'employees' && role !== 'admin') {
+        showToast('Access Denied: Admins only!', 'err');
         window.location.hash = 'dashboard';
         return;
     }
