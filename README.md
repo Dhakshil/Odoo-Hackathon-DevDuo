@@ -75,4 +75,4 @@ The system helps organizations reduce manual HR workload and improve operational
 
 ## Demo Video
 
-Will be updated later since project under execution.
+[Video Demostration Link: ](https://1drv.ms/v/c/e94fd2da46d3c17a/IQDoV2hHus00Q71CwZGZFtc3AUndYXjoOSj9MoqFIfZLoBg?e=behEhX)
