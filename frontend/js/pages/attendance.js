@@ -8,16 +8,16 @@ export async function render(container) {
     let checkInTime = null;
 
     try {
-        // FIXED: Changed /attendance/my to /attendance
         const records = await api.get('/attendance');
 
         // Check if already checked in today
-        const todayStr = new Date().toLocaleDateString('en-CA');
+        const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
         const todayRecord = records.find(r => r.date === todayStr);
         
         if (todayRecord && todayRecord.check_in && !todayRecord.check_out) {
             isCheckedIn = true;
-            checkInTime = todayRecord.check_in;
+            // Format time for UI
+            checkInTime = new Date(todayRecord.check_in).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         }
 
         container.innerHTML = `
@@ -49,8 +49,8 @@ export async function render(container) {
                             ${records.map(r => `
                                 <tr class="border-b border-v-stone/10 hover:bg-v-hover transition-colors">
                                     <td class="px-4 py-3 text-v-ash font-medium">${r.date}</td>
-                                    <td class="px-4 py-3 text-v-stone-l font-mono text-xs">${r.check_in || '---'}</td>
-                                    <td class="px-4 py-3 text-v-stone-l font-mono text-xs">${r.check_out || '---'}</td>
+                                    <td class="px-4 py-3 text-v-stone-l font-mono text-xs">${r.check_in ? new Date(r.check_in).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '---'}</td>
+                                    <td class="px-4 py-3 text-v-stone-l font-mono text-xs">${r.check_out ? new Date(r.check_out).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '---'}</td>
                                     <td class="px-4 py-3 text-right">
                                         <span class="px-2.5 py-1 rounded-full text-xs font-medium ${r.status === 'present' ? 'bg-ok/15 text-ok' : 'bg-err/15 text-err'}">
                                             ${r.status.charAt(0).toUpperCase() + r.status.slice(1)}
