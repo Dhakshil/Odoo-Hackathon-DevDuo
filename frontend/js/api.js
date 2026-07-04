@@ -3,7 +3,7 @@ import { API_URL } from './config.js';
 // ==========================================
 // 🔥 MOCK MODE: Change to false when backend is ready!
 // ==========================================
-const USE_MOCK = true; 
+const USE_MOCK = false; 
 
 function getHeaders(hasBody = false) {
     const headers = {};
